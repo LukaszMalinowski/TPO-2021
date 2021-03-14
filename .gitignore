@@ -3,6 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+**/bin/**
 
 ### STS ###
 .apt_generated
@@ -45,8 +46,3 @@ pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.next
 release.properties
-
-### Vaadin ###
-node_modules/
-*.json
-*.js

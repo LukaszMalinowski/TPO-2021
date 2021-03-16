@@ -1,12 +1,13 @@
 /**
- * @author Malinowski Łukasz S19743
+ *
+ *  @author Malinowski Łukasz S19743
+ *
  */
 
 package zad2;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -19,7 +20,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.beans.XMLEncoder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Currency;
@@ -88,8 +88,7 @@ public class Service {
         }
 
         if (json != null) {
-            double rate = json.getJSONObject("rates").getDouble(currency);
-            return rate;
+            return json.getJSONObject("rates").getDouble(currency);
         }
 
         return null;
@@ -103,7 +102,7 @@ public class Service {
         }
 
         //TODO get current url
-        
+
         Request requestTableA = new Request.Builder()
                 .url(NBP_TABLE_A_URL)
                 .method("GET", null)
@@ -140,8 +139,7 @@ public class Service {
     private Double searchResponseForCurrency(String response, String currency) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = null;
-            builder = factory.newDocumentBuilder();
+            DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new InputSource(new StringReader(response)));
             Element rootElement = document.getDocumentElement();
 
@@ -181,12 +179,19 @@ public class Service {
             builder = factory.newDocumentBuilder();
 
             //Parse the content to Document object
-            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));
-            return doc;
+            return builder.parse(new InputSource(new StringReader(xmlString)));
         }
         catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-}  
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+}

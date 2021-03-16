@@ -13,5 +13,11 @@
 		<level name="stax-1.2.0" value="project"/>
 		<level name="stax-api-1.0.1" value="project"/>
 		<level name="xpp3-1.1.3.3" value="project"/>
+		<level name="javafx-base-16" value="project"/>
+		<level name="javafx-base-16 (2)" value="project"/>
+		<level name="javafx-base-16-win" value="project"/>
+		<level name="javafx-graphics-16-win" value="project"/>
+		<level name="javafx-controls-16-win" value="project"/>
+		<level name="javafx-fxml-16-win" value="project"/>
 	</levels>
 </component>

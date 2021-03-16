@@ -7,6 +7,10 @@
 package zad2;
 
 
+import javafx.application.Application;
+
+import javax.swing.*;
+
 public class Main {
   public static void main(String[] args) {
     Service s = new Service("Poland");
@@ -16,7 +20,6 @@ public class Main {
     // ...
     // część uruchamiająca GUI
 
-    System.out.println(rate1);
-    System.out.println(rate2);
+    SwingUtilities.invokeLater(() -> new Gui().setVisible(true));
   }
 }

@@ -9,5 +9,9 @@
 		<level name="okhttp-2.7.5" value="project"/>
 		<level name="okio-1.6.0" value="project"/>
 		<level name="json-20210307" value="project"/>
+		<level name="simple-xml-2.7.1" value="project"/>
+		<level name="stax-1.2.0" value="project"/>
+		<level name="stax-api-1.0.1" value="project"/>
+		<level name="xpp3-1.1.3.3" value="project"/>
 	</levels>
 </component>

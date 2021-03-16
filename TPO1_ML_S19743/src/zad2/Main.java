@@ -15,5 +15,8 @@ public class Main {
     Double rate2 = s.getNBPRate();
     // ...
     // część uruchamiająca GUI
+
+    System.out.println(rate1);
+    System.out.println(rate2);
   }
 }

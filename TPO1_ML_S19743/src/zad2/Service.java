@@ -9,8 +9,19 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.beans.XMLEncoder;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
@@ -21,6 +32,8 @@ public class Service {
 
     private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
     private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
+    private final String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a051z210316.xml";
+    private final String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b010z210310.xml";
 
     private String country;
     OkHttpClient client;
@@ -56,8 +69,7 @@ public class Service {
     }
 
     public Double getRateFor(String currencyCode) {
-        String localeCode = countries.get(country);
-        String currency = Currency.getInstance(new Locale("", localeCode)).toString();
+        String currency = getCurrencyCode();
 
         String url = String.format(EXCHANGE_API_URL, currencyCode, currency);
         Request request = new Request.Builder()
@@ -77,7 +89,6 @@ public class Service {
 
         if (json != null) {
             double rate = json.getJSONObject("rates").getDouble(currency);
-            System.out.println(rate);
             return rate;
         }
 
@@ -85,6 +96,97 @@ public class Service {
     }
 
     public Double getNBPRate() {
+        String currency = getCurrencyCode();
+
+        if (currency.equals("PLN")) {
+            return 1d;
+        }
+
+        //TODO get current url
+        
+        Request requestTableA = new Request.Builder()
+                .url(NBP_TABLE_A_URL)
+                .method("GET", null)
+                .build();
+
+        Request requestTableB = new Request.Builder()
+                .url(NBP_TABLE_B_URL)
+                .method("GET", null)
+                .build();
+
+        try {
+            ResponseBody responseTableA = client.newCall(requestTableA).execute().body();
+            ResponseBody responseTableB = client.newCall(requestTableB).execute().body();
+
+            Double value1 = searchResponseForCurrency(responseTableA.string(), currency);
+
+            if(value1 != null) {
+                return value1;
+            }
+
+            Double value2 = searchResponseForCurrency(responseTableB.string(), currency);
+
+            if(value2 != null) {
+                return value2;
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private Double searchResponseForCurrency(String response, String currency) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = null;
+            builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new InputSource(new StringReader(response)));
+            Element rootElement = document.getDocumentElement();
+
+            NodeList elements = rootElement.getElementsByTagName("pozycja");
+
+            for (int i = 0; i < elements.getLength(); i++) {
+                Node node = elements.item(i);
+                if(node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element element = (Element) node;
+                    String tempCurrencyCode = element.getElementsByTagName("kod_waluty").item(0).getTextContent();
+                    if(tempCurrencyCode.equals(currency)) {
+                        String value = element.getElementsByTagName("kurs_sredni").item(0).getTextContent();
+                        return Double.parseDouble(value.replace(",","."));
+                    }
+                }
+            }
+        }
+        catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getCurrencyCode() {
+        String localeCode = countries.get(country);
+        return Currency.getInstance(new Locale("", localeCode)).toString();
+    }
+
+    private static Document convertStringToXMLDocument(String xmlString) {
+        //Parser that produces DOM object trees from XML content
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        //API to obtain DOM Document instance
+        DocumentBuilder builder = null;
+        try {
+            //Create DocumentBuilder with default configuration
+            builder = factory.newDocumentBuilder();
+
+            //Parse the content to Document object
+            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));
+            return doc;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }  

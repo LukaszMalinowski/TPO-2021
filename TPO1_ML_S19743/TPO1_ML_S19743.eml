@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component inheritJdk="true">
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<levels>
+		<level name="unirest-java-4.0.0-RC1" value="project"/>
+		<level name="unirest-java-3.11.09" value="project"/>
+		<level name="unirest-java-3.11.11" value="project"/>
+		<level name="okhttp-2.7.5" value="project"/>
+		<level name="okio-1.6.0" value="project"/>
+	</levels>
+</component>

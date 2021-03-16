@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 bin/
+TPO1res.txt
 
 ### STS ###
 .apt_generated

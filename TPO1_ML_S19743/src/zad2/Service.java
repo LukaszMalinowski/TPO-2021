@@ -6,6 +6,9 @@ package zad2;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -25,7 +28,10 @@ public class Service {
 
     public String getWeather(String city) {
         String url = String.format(WEATHER_API_URL, city, WEATHER_API_KEY);
-        Request request = new Request.Builder().url(url).method("GET", null).build();
+        Request request = new Request.Builder()
+                .url(url)
+                .method("GET", null)
+                .build();
         String response = "";
         try {
             response = client.newCall(request).execute().body().string();
@@ -39,6 +45,27 @@ public class Service {
 
     public Double getRateFor(String currencyCode) {
         String url = String.format(EXCHANGE_API_URL, currencyCode);
+        Request request = new Request.Builder()
+                .url(url)
+                .method("GET", null)
+                .build();
+
+        JSONObject json = null;
+
+        try {
+            ResponseBody response = client.newCall(request).execute().body();
+            json = new JSONObject(response.string());
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (json != null) {
+            double rate = json.getJSONObject("rates").getDouble("PLN");
+            System.out.println(rate);
+            return rate;
+        }
+
         return null;
     }
 

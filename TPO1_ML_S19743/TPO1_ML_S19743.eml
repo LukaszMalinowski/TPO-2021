@@ -8,5 +8,6 @@
 		<level name="unirest-java-3.11.11" value="project"/>
 		<level name="okhttp-2.7.5" value="project"/>
 		<level name="okio-1.6.0" value="project"/>
+		<level name="json-20210307" value="project"/>
 	</levels>
 </component>

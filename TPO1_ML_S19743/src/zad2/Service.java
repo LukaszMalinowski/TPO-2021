@@ -11,19 +11,31 @@ import com.squareup.okhttp.ResponseBody;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Currency;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class Service {
     private final String WEATHER_API_KEY = "44f6dad7325facf5be789bcb3678ab09";
 
     private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
-    private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s";
+    private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
 
     private String country;
     OkHttpClient client;
+    Map<String, String> countries = new HashMap<>();
 
     public Service(String country) {
         this.country = country;
         this.client = new OkHttpClient();
+
+        Locale.setDefault(new Locale("", "en"));
+
+        for (String iso : Locale.getISOCountries()) {
+            Locale l = new Locale("", iso);
+            countries.put(l.getDisplayCountry(), iso);
+        }
     }
 
     public String getWeather(String city) {
@@ -44,7 +56,10 @@ public class Service {
     }
 
     public Double getRateFor(String currencyCode) {
-        String url = String.format(EXCHANGE_API_URL, currencyCode);
+        String localeCode = countries.get(country);
+        String currency = Currency.getInstance(new Locale("", localeCode)).toString();
+
+        String url = String.format(EXCHANGE_API_URL, currencyCode, currency);
         Request request = new Request.Builder()
                 .url(url)
                 .method("GET", null)
@@ -61,7 +76,7 @@ public class Service {
         }
 
         if (json != null) {
-            double rate = json.getJSONObject("rates").getDouble("PLN");
+            double rate = json.getJSONObject("rates").getDouble(currency);
             System.out.println(rate);
             return rate;
         }

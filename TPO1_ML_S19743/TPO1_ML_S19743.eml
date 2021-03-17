@@ -3,21 +3,8 @@
 	<exclude-output/>
 	<contentEntry url="file://$MODULE_DIR$"/>
 	<levels>
-		<level name="unirest-java-4.0.0-RC1" value="project"/>
-		<level name="unirest-java-3.11.09" value="project"/>
-		<level name="unirest-java-3.11.11" value="project"/>
-		<level name="okhttp-2.7.5" value="project"/>
-		<level name="okio-1.6.0" value="project"/>
-		<level name="json-20210307" value="project"/>
-		<level name="simple-xml-2.7.1" value="project"/>
-		<level name="stax-1.2.0" value="project"/>
-		<level name="stax-api-1.0.1" value="project"/>
-		<level name="xpp3-1.1.3.3" value="project"/>
-		<level name="javafx-base-16" value="project"/>
-		<level name="javafx-base-16 (2)" value="project"/>
-		<level name="javafx-base-16-win" value="project"/>
-		<level name="javafx-graphics-16-win" value="project"/>
-		<level name="javafx-controls-16-win" value="project"/>
-		<level name="javafx-fxml-16-win" value="project"/>
+		<level name="json-20210307 (2)" value="project"/>
+		<level name="okhttp-2.7.5 (2)" value="project"/>
+		<level name="okio-1.6.0 (2)" value="project"/>
 	</levels>
 </component>

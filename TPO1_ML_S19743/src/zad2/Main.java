@@ -6,9 +6,6 @@
 
 package zad2;
 
-
-import javafx.application.Application;
-
 import javax.swing.*;
 
 public class Main {

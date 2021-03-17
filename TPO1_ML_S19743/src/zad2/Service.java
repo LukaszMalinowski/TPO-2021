@@ -47,7 +47,7 @@ public class Service {
 
         for (String iso : Locale.getISOCountries()) {
             Locale l = new Locale("", iso);
-            countries.put(l.getDisplayCountry(), iso);
+            countries.put(l.getDisplayCountry().toLowerCase(), iso);
         }
     }
 
@@ -164,7 +164,7 @@ public class Service {
     }
 
     private String getCurrencyCode() {
-        String localeCode = countries.get(country);
+        String localeCode = countries.get(country.toLowerCase());
         return Currency.getInstance(new Locale("", localeCode)).toString();
     }
 

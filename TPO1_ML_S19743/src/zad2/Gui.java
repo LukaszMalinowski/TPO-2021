@@ -1,7 +1,5 @@
 package zad2;
 
-import javafx.embed.swing.JFXPanel;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -16,17 +14,21 @@ public class Gui extends JFrame {
 
         JPanel weatherPanel = new JPanel();
         JTextField cityTextField = new JTextField();
+        cityTextField.setText("Warsaw");
         JButton cityButton = new JButton("Get weather for city in textfield");
         JTextArea weatherTextArea = new JTextArea();
         weatherTextArea.setEditable(false);
+        weatherTextArea.setLineWrap(true);
 
         JPanel nbpPanel = new JPanel();
         JTextField countryTextField = new JTextField();
+        countryTextField.setText("Poland");
         JButton nbpButton = new JButton("Get rate for country in textfield");
         JLabel nbpLabel = new JLabel();
 
         JPanel ratePanel = new JPanel();
         JTextField currencyCodeTextField = new JTextField();
+        currencyCodeTextField.setText("USD");
         JButton currencyButton = new JButton("Get rate for currency in textfield");
         JLabel rateLabel = new JLabel();
 
@@ -71,12 +73,19 @@ public class Gui extends JFrame {
             nbpLabel.setText(String.valueOf(rate));
         });
 
-        this.setLayout(new GridLayout(3, 1));
+        this.setLayout(new GridLayout(4, 1));
 
         this.add(weatherPanel, TOP_ALIGNMENT);
         this.add(ratePanel, CENTER_ALIGNMENT);
         this.add(nbpPanel, BOTTOM_ALIGNMENT);
 
+//        JFXPanel jfxPanel = new JFXPanel();
+//        Platform.runLater(() -> {
+//            WebView webView = new WebView();
+//            WebEngine engine = webView.getEngine();
+//            engine.load("https://en.wikipedia.org/wiki/" + cityTextField.getText());
+//            jfxPanel.setScene(new Scene(webView));
+//        });
 
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

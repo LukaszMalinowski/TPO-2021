@@ -2,6 +2,7 @@ package zad2;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class Gui extends JFrame {
 
@@ -73,20 +74,38 @@ public class Gui extends JFrame {
             nbpLabel.setText(String.valueOf(rate));
         });
 
-        this.setLayout(new GridLayout(4, 1));
+        this.setLayout(new GridLayout(5, 1));
 
         this.add(weatherPanel, TOP_ALIGNMENT);
         this.add(ratePanel, CENTER_ALIGNMENT);
         this.add(nbpPanel, BOTTOM_ALIGNMENT);
 
-//        JFXPanel jfxPanel = new JFXPanel();
-//        Platform.runLater(() -> {
-//            WebView webView = new WebView();
-//            WebEngine engine = webView.getEngine();
-//            engine.load("https://en.wikipedia.org/wiki/" + cityTextField.getText());
-//            jfxPanel.setScene(new Scene(webView));
-//        });
+        JEditorPane editorPane = new JEditorPane();
+        editorPane.setEditable(false);
+        try {
+            editorPane.setPage("https://pl.wikipedia.org/wiki/Warszawa");
+        }
+        catch (IOException e) {
+            editorPane.setContentType("text/html");
+            editorPane.setText("<html>Could not load</html>");
+        }
 
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        JButton loadPageButton = new JButton("Load page");
+
+        loadPageButton.addActionListener(event -> {
+            try {
+                editorPane.setText("<html>Loading</html>");
+                editorPane.setPage(String.format("https://pl.wikipedia.org/wiki/%s", cityTextField.getText()));
+            }
+            catch (IOException e) {
+                editorPane.setContentType("text/html");
+                editorPane.setText("<html>Could not load</html>");
+            }
+        });
+
+        this.add(loadPageButton, BOTTOM_ALIGNMENT);
+        this.add(scrollPane, BOTTOM_ALIGNMENT);
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }

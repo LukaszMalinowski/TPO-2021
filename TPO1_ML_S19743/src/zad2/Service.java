@@ -32,8 +32,8 @@ public class Service {
 
     private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
     private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
-    private final String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a051z210316.xml";
-    private final String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b010z210310.xml";
+    private final String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a053z210318.xml";
+    private final String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b011z210317.xml";
 
     private String country;
     OkHttpClient client;

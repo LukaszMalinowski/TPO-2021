@@ -30,7 +30,7 @@ import java.util.Map;
 public class Service {
     private final String WEATHER_API_KEY = "44f6dad7325facf5be789bcb3678ab09";
 
-    private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
+    private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s";
     private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
     private final String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a053z210318.xml";
     private final String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b011z210317.xml";
@@ -43,16 +43,11 @@ public class Service {
         this.country = country;
         this.client = new OkHttpClient();
 
-        Locale.setDefault(new Locale("", "en"));
-
-        for (String iso : Locale.getISOCountries()) {
-            Locale l = new Locale("", iso);
-            countries.put(l.getDisplayCountry().toLowerCase(), iso);
-        }
+        setCountriesMap();
     }
 
     public String getWeather(String city) {
-        String url = String.format(WEATHER_API_URL, city, WEATHER_API_KEY);
+        String url = String.format(WEATHER_API_URL, city, getCountryCode(), WEATHER_API_KEY);
         Request request = new Request.Builder()
                 .url(url)
                 .method("GET", null)
@@ -163,9 +158,22 @@ public class Service {
         return null;
     }
 
+    private String getCountryCode() {
+        return countries.get(country.toLowerCase());
+    }
+
     private String getCurrencyCode() {
-        String localeCode = countries.get(country.toLowerCase());
+        String localeCode = getCountryCode();
         return Currency.getInstance(new Locale("", localeCode)).toString();
+    }
+
+    private void setCountriesMap() {
+        Locale.setDefault(new Locale("", "en"));
+
+        for (String iso : Locale.getISOCountries()) {
+            Locale l = new Locale("", iso);
+            countries.put(l.getDisplayCountry().toLowerCase(), iso);
+        }
     }
 
     private static Document convertStringToXMLDocument(String xmlString) {
@@ -173,7 +181,7 @@ public class Service {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         //API to obtain DOM Document instance
-        DocumentBuilder builder = null;
+        DocumentBuilder builder;
         try {
             //Create DocumentBuilder with default configuration
             builder = factory.newDocumentBuilder();

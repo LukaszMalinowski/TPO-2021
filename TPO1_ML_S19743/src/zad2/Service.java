@@ -1,7 +1,5 @@
 /**
- *
- *  @author Malinowski Łukasz S19743
- *
+ * @author Malinowski Łukasz S19743
  */
 
 package zad2;
@@ -29,11 +27,12 @@ import java.util.Map;
 
 public class Service {
     private final String WEATHER_API_KEY = "44f6dad7325facf5be789bcb3678ab09";
-
     private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s";
     private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
-    private final String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a053z210318.xml";
-    private final String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b011z210317.xml";
+    private String NBP_A_URL = "https://www.nbp.pl/kursy/kursya.html";
+    private String NBP_B_URL = "https://www.nbp.pl/kursy/kursyb.html";
+    private String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a056z210323.xml";
+    private String NBP_TABLE_B_URL = "https://www.nbp.pl/kursy/xml/b011z210317.xml";
 
     private String country;
     OkHttpClient client;
@@ -96,7 +95,7 @@ public class Service {
             return 1d;
         }
 
-        //TODO get current url
+        setTablesUrl();
 
         Request requestTableA = new Request.Builder()
                 .url(NBP_TABLE_A_URL)
@@ -114,13 +113,13 @@ public class Service {
 
             Double value1 = searchResponseForCurrency(responseTableA.string(), currency);
 
-            if(value1 != null) {
+            if (value1 != null) {
                 return value1;
             }
 
             Double value2 = searchResponseForCurrency(responseTableB.string(), currency);
 
-            if(value2 != null) {
+            if (value2 != null) {
                 return value2;
             }
         }
@@ -129,6 +128,38 @@ public class Service {
         }
 
         return null;
+    }
+
+    private void setTablesUrl() {
+        Request requestA = new Request.Builder()
+                .url(NBP_A_URL)
+                .method("GET", null)
+                .build();
+
+        Request requestB = new Request.Builder()
+                .url(NBP_B_URL)
+                .method("GET", null)
+                .build();
+
+        try {
+            String responseA = client.newCall(requestA).execute().body().string();
+            String responseB = client.newCall(requestB).execute().body().string();
+
+            if (responseA.contains("/kursy/xml/")) {
+                int from = responseA.indexOf("/kursy/xml/");
+                int to = responseA.indexOf("\"", from);
+                NBP_TABLE_A_URL = "https://www.nbp.pl" + responseA.substring(from, to);
+            }
+
+            if (responseB.contains("/kursy/xml/")) {
+                int from = responseB.indexOf("/kursy/xml/");
+                int to = responseB.indexOf("\"", from);
+                NBP_TABLE_B_URL = "https://www.nbp.pl" + responseB.substring(from, to);
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Double searchResponseForCurrency(String response, String currency) {
@@ -142,12 +173,12 @@ public class Service {
 
             for (int i = 0; i < elements.getLength(); i++) {
                 Node node = elements.item(i);
-                if(node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element element = (Element) node;
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element element = (Element)node;
                     String tempCurrencyCode = element.getElementsByTagName("kod_waluty").item(0).getTextContent();
-                    if(tempCurrencyCode.equals(currency)) {
+                    if (tempCurrencyCode.equals(currency)) {
                         String value = element.getElementsByTagName("kurs_sredni").item(0).getTextContent();
-                        return Double.parseDouble(value.replace(",","."));
+                        return Double.parseDouble(value.replace(",", "."));
                     }
                 }
             }
@@ -174,25 +205,6 @@ public class Service {
             Locale l = new Locale("", iso);
             countries.put(l.getDisplayCountry().toLowerCase(), iso);
         }
-    }
-
-    private static Document convertStringToXMLDocument(String xmlString) {
-        //Parser that produces DOM object trees from XML content
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
-        //API to obtain DOM Document instance
-        DocumentBuilder builder;
-        try {
-            //Create DocumentBuilder with default configuration
-            builder = factory.newDocumentBuilder();
-
-            //Parse the content to Document object
-            return builder.parse(new InputSource(new StringReader(xmlString)));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public String getCountry() {

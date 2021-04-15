@@ -8,16 +8,21 @@ package zad1;
 
 
 public class ChatServer {
-    public ChatServer(String host, int port) {
 
+    private String host;
+    private int port;
+
+    public ChatServer(String host, int port) {
+        this.host = host;
+        this.port = port;
     }
 
     public void startServer() {
-
+        System.out.println("Server started");
     }
 
     public void stopServer() {
-
+        System.out.println("Server stopped");
     }
 
 

@@ -1,11 +1,14 @@
 /**
- * @author Malinowski Łukasz S19743
+ *
+ *  @author Malinowski Łukasz S19743
+ *
  */
 
 package zad2;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -28,7 +31,7 @@ import java.util.Map;
 public class Service {
     private final String WEATHER_API_KEY = "44f6dad7325facf5be789bcb3678ab09";
     private final String WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&appid=%s";
-    private final String EXCHANGE_API_URL = "https://api.exchangeratesapi.io/latest?base=%s&symbols=%s";
+    private final String EXCHANGE_API_URL = "https://api.exchangerate.host/latest?base=%s&symbols=%s";
     private String NBP_A_URL = "https://www.nbp.pl/kursy/kursya.html";
     private String NBP_B_URL = "https://www.nbp.pl/kursy/kursyb.html";
     private String NBP_TABLE_A_URL = "https://www.nbp.pl/kursy/xml/a056z210323.xml";
@@ -73,12 +76,22 @@ public class Service {
 
         JSONObject json = null;
 
+        Response response = null;
+
         try {
-            ResponseBody response = client.newCall(request).execute().body();
-            json = new JSONObject(response.string());
+            response = client.newCall(request).execute();
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if(response != null && response.code() == 200) {
+            try {
+                json = new JSONObject(response.body().string());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         if (json != null) {

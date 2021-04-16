@@ -1,5 +1,7 @@
 /**
+ *
  * @author Malinowski Łukasz S19743
+ *
  */
 
 package zad1;

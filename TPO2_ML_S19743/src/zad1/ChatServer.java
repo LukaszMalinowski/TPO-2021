@@ -11,11 +11,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +21,14 @@ import java.util.Set;
 
 public class ChatServer {
 
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
     boolean serverIsRunning;
     private ServerSocketChannel serverChannel;
     private Selector selector;
     private final List<String> serverLog = Collections.synchronizedList(new ArrayList<>());
-    private static Charset charset  = Charset.forName("ISO-8859-2");
+    private static final Charset charset = Charset.forName("ISO-8859-2");
 
     public ChatServer(String host, int port) {
         this.host = host;
@@ -62,7 +61,7 @@ public class ChatServer {
                 Set<SelectionKey> keys = selector.selectedKeys();
 
                 keys.forEach(key -> {
-                    if(key.isAcceptable()) {
+                    if (key.isAcceptable()) {
                         try {
                             SocketChannel socketChannel = serverChannel.accept();
                             socketChannel.configureBlocking(false);
@@ -73,14 +72,9 @@ public class ChatServer {
                         }
                     }
 
-                    if(key.isReadable()) {
-                        try {
-                            SocketChannel socketChannel = serverChannel.accept();
-                            processRequest(socketChannel);
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    if (key.isReadable()) {
+                        SocketChannel socketChannel = (SocketChannel)key.channel();
+                        processRequest(socketChannel);
                     }
                 });
             }
@@ -93,7 +87,7 @@ public class ChatServer {
     }
 
     private void processRequest(SocketChannel socketChannel) {
-        if(!socketChannel.isOpen())
+        if (!socketChannel.isOpen())
             return;
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
@@ -107,7 +101,7 @@ public class ChatServer {
             while (true) {
                 int read = socketChannel.read(buffer);
 
-                if(read > 0) {
+                if (read > 0) {
                     buffer.flip();
                     CharBuffer decode = charset.decode(buffer);
                     while (decode.hasRemaining()) {
@@ -123,13 +117,32 @@ public class ChatServer {
             e.printStackTrace();
         }
 
-        String request = stringBuffer.toString();
+        sendMessage(stringBuffer.toString());
+    }
 
-        //TODO append datetime to request, add it to servel log, and send to all channels
+    private void sendMessage(String message) {
+        serverLog.add(simpleDateFormat.format(System.currentTimeMillis() + " " + message));
+
+        Set<SelectionKey> selectedKeys = selector.selectedKeys();
+
+        selectedKeys.forEach(key -> {
+            if (key.isWritable()) {
+                SocketChannel socketChannel = (SocketChannel)key.channel();
+
+                ByteBuffer buffer = charset.encode(CharBuffer.wrap(message));
+                try {
+                    socketChannel.write(buffer);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void stopServer() {
         System.out.println("Server stopped");
+        serverIsRunning = false;
         try {
             serverChannel.close();
         }
@@ -140,6 +153,12 @@ public class ChatServer {
 
 
     public String getServerLog() {
-        return null;
+        StringBuilder stringBuilder = new StringBuilder();
+        serverLog.forEach(log -> {
+            stringBuilder.append(log);
+            stringBuilder.append("\n");
+        });
+        stringBuilder.deleteCharAt(stringBuilder.length());
+        return stringBuilder.toString();
     }
 }

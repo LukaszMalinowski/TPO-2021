@@ -43,7 +43,7 @@ public class ChatClientTask implements Runnable {
     }
 
     public ChatClient getClient() {
-        return null;
+        return client;
     }
 
     private void sleep(int wait) {

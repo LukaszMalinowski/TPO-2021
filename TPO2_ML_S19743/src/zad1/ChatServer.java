@@ -24,10 +24,12 @@ public class ChatServer extends Thread {
     private Selector selector;
     private final List<String> serverLog = Collections.synchronizedList(new ArrayList<>());
     private static final Charset charset = Charset.forName("ISO-8859-2");
+    private final Map<String, SocketChannel> clients;
 
     public ChatServer(String host, int port) {
         this.host = host;
         this.port = port;
+        clients = new HashMap<>();
     }
 
     public void startServer() {
@@ -62,9 +64,9 @@ public class ChatServer extends Thread {
                     iter.remove();
 
                     if (key.isAcceptable()) {
-                            SocketChannel socketChannel = serverChannel.accept();
-                            socketChannel.configureBlocking(false);
-                            socketChannel.register(selector, SelectionKey.OP_READ);
+                        SocketChannel socketChannel = serverChannel.accept();
+                        socketChannel.configureBlocking(false);
+                        socketChannel.register(selector, SelectionKey.OP_READ);
                     }
 
                     if (key.isReadable()) {
@@ -74,7 +76,6 @@ public class ChatServer extends Thread {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -84,43 +85,43 @@ public class ChatServer extends Thread {
             return;
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuilder = new StringBuilder();
 
         buffer.clear();
-        stringBuffer.setLength(0);
+        stringBuilder.setLength(0);
 
         try {
             while (socketChannel.read(buffer) > 0) {
                 buffer.flip();
                 CharBuffer decode = charset.decode(buffer);
-                stringBuffer.append(decode);
+                stringBuilder.append(decode);
                 buffer.clear();
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
         }
 
-        if (!stringBuffer.toString().isEmpty())
-            sendMessage(stringBuffer.toString());
+        String request = stringBuilder.toString();
+
+        if (request.contains("logged in")) {
+            clients.put(request.substring(0, request.indexOf(' ')), socketChannel);
+        }
+
+        //TODO process logged out
+
+        if (!stringBuilder.toString().isEmpty())
+            sendMessage(stringBuilder.toString());
     }
 
     private void sendMessage(String message) {
         serverLog.add(simpleDateFormat.format(System.currentTimeMillis()) + " " + message);
 
-        Set<SelectionKey> selectedKeys = selector.selectedKeys();
-
-        selectedKeys.forEach(key -> {
-            if (key.isWritable()) {
-                SocketChannel socketChannel = (SocketChannel)key.channel();
-
-                ByteBuffer buffer = charset.encode(CharBuffer.wrap(message));
-                try {
-                    socketChannel.write(buffer);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
+        clients.forEach((client, socket) -> {
+            ByteBuffer buffer = charset.encode(CharBuffer.wrap(message));
+            try {
+                socket.write(buffer);
+            }
+            catch (IOException e) {
             }
         });
     }

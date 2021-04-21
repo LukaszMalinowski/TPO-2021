@@ -14,12 +14,9 @@ import java.nio.CharBuffer;
 import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class ChatServer {
+public class ChatServer extends Thread {
 
     private final String host;
     private final int port;
@@ -48,42 +45,7 @@ public class ChatServer {
         catch (Exception e) {
             e.printStackTrace();
         }
-        serviceConnections();
-    }
-
-    private void serviceConnections() {
-        serverIsRunning = true;
-
-        while (serverIsRunning) {
-            try {
-                selector.select();
-
-                Set<SelectionKey> keys = selector.selectedKeys();
-
-                keys.forEach(key -> {
-                    if (key.isAcceptable()) {
-                        try {
-                            SocketChannel socketChannel = serverChannel.accept();
-                            socketChannel.configureBlocking(false);
-                            socketChannel.register(selector, SelectionKey.OP_READ);
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (key.isReadable()) {
-                        SocketChannel socketChannel = (SocketChannel)key.channel();
-                        processRequest(socketChannel);
-                    }
-                });
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
+        this.start();
     }
 
     private void processRequest(SocketChannel socketChannel) {
@@ -143,6 +105,7 @@ public class ChatServer {
     public void stopServer() {
         System.out.println("Server stopped");
         serverIsRunning = false;
+        this.interrupt();
         try {
             serverChannel.close();
         }
@@ -160,5 +123,44 @@ public class ChatServer {
         });
         stringBuilder.deleteCharAt(stringBuilder.length());
         return stringBuilder.toString();
+    }
+
+    @Override
+    public void run() {
+        serverIsRunning = true;
+
+        while (serverIsRunning) {
+            try {
+                selector.select();
+
+                Set<SelectionKey> keys = selector.selectedKeys();
+
+                Iterator<SelectionKey> iter = keys.iterator();
+                while(iter.hasNext()) {
+                    SelectionKey key = iter.next();
+                    iter.remove();
+
+                    if (key.isAcceptable()) {
+                        try {
+                            SocketChannel socketChannel = serverChannel.accept();
+                            socketChannel.configureBlocking(false);
+                            socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                            continue;
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (key.isReadable()) {
+                        SocketChannel socketChannel = (SocketChannel)key.channel();
+                        processRequest(socketChannel);
+                    }
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

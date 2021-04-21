@@ -8,51 +8,48 @@ package zad1;
 
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-public class ChatClientTask implements Runnable {
+public class ChatClientTask extends FutureTask<ChatClient> {
 
-    private ChatClient client;
-    private List<String> messages;
-    private int wait;
-
-    private ChatClientTask(ChatClient client, List<String> messages, int wait) {
-        this.client = client;
-        this.messages = messages;
-        this.wait = wait;
+    private ChatClientTask(Callable<ChatClient> callable) {
+        super(callable);
     }
 
     public static ChatClientTask create(ChatClient c, List<String> msgs, int wait) {
-        return new ChatClientTask(c, msgs, wait);
-    }
-
-    @Override
-    public void run() {
-        client.login();
-        sleep(wait);
-        messages.forEach(messages -> {
-            client.send(messages);
+        return new ChatClientTask(() -> {
+            c.login();
             sleep(wait);
+            msgs.forEach(messages -> {
+                c.send(messages);
+                sleep(wait);
+            });
+            c.logout();
+            sleep(wait);
+
+            return c;
         });
-        client.logout();
-        sleep(wait);
-    }
-
-    public void get() throws InterruptedException, ExecutionException {
-
     }
 
     public ChatClient getClient() {
-        return client;
+        try {
+            return this.get();
+        }
+        catch (InterruptedException | ExecutionException exception) {
+            exception.printStackTrace();
+        }
+        return null;
     }
 
-    private void sleep(int wait) {
+    private static void sleep(int wait) {
         if (wait != 0) {
-            try {
-                this.wait(wait);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
+                try {
+                    Thread.sleep(wait);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
         }
     }
 }

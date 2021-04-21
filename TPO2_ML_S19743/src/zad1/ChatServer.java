@@ -1,7 +1,5 @@
 /**
- *
- *  @author Malinowski Łukasz S19743
- *
+ * @author Malinowski Łukasz S19743
  */
 
 package zad1;
@@ -40,12 +38,45 @@ public class ChatServer extends Thread {
             serverChannel.configureBlocking(false);
             selector = Selector.open();
 
-            serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+            serverChannel.register(selector, serverChannel.validOps(), null);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
         this.start();
+    }
+
+    @Override
+    public void run() {
+        serverIsRunning = true;
+
+        while (serverIsRunning) {
+            try {
+                selector.select();
+
+                Set<SelectionKey> keys = selector.selectedKeys();
+
+                Iterator<SelectionKey> iter = keys.iterator();
+                while (iter.hasNext()) {
+                    SelectionKey key = iter.next();
+                    iter.remove();
+
+                    if (key.isAcceptable()) {
+                            SocketChannel socketChannel = serverChannel.accept();
+                            socketChannel.configureBlocking(false);
+                            socketChannel.register(selector, SelectionKey.OP_READ);
+                    }
+
+                    if (key.isReadable()) {
+                        SocketChannel socketChannel = (SocketChannel)key.channel();
+                        processRequest(socketChannel);
+                    }
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void processRequest(SocketChannel socketChannel) {
@@ -59,31 +90,23 @@ public class ChatServer extends Thread {
         stringBuffer.setLength(0);
 
         try {
-            readLoop:
-            while (true) {
-                int read = socketChannel.read(buffer);
-
-                if (read > 0) {
-                    buffer.flip();
-                    CharBuffer decode = charset.decode(buffer);
-                    while (decode.hasRemaining()) {
-                        char c = decode.get();
-                        if (c == '\r' || c == '\n')
-                            break readLoop;
-                        stringBuffer.append(c);
-                    }
-                }
+            while (socketChannel.read(buffer) > 0) {
+                buffer.flip();
+                CharBuffer decode = charset.decode(buffer);
+                stringBuffer.append(decode);
+                buffer.clear();
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
-        sendMessage(stringBuffer.toString());
+        if (!stringBuffer.toString().isEmpty())
+            sendMessage(stringBuffer.toString());
     }
 
     private void sendMessage(String message) {
-        serverLog.add(simpleDateFormat.format(System.currentTimeMillis() + " " + message));
+        serverLog.add(simpleDateFormat.format(System.currentTimeMillis()) + " " + message);
 
         Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
@@ -121,46 +144,7 @@ public class ChatServer extends Thread {
             stringBuilder.append(log);
             stringBuilder.append("\n");
         });
-        stringBuilder.deleteCharAt(stringBuilder.length());
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         return stringBuilder.toString();
-    }
-
-    @Override
-    public void run() {
-        serverIsRunning = true;
-
-        while (serverIsRunning) {
-            try {
-                selector.select();
-
-                Set<SelectionKey> keys = selector.selectedKeys();
-
-                Iterator<SelectionKey> iter = keys.iterator();
-                while(iter.hasNext()) {
-                    SelectionKey key = iter.next();
-                    iter.remove();
-
-                    if (key.isAcceptable()) {
-                        try {
-                            SocketChannel socketChannel = serverChannel.accept();
-                            socketChannel.configureBlocking(false);
-                            socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                            continue;
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (key.isReadable()) {
-                        SocketChannel socketChannel = (SocketChannel)key.channel();
-                        processRequest(socketChannel);
-                    }
-                }
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

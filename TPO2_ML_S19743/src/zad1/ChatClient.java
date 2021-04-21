@@ -9,10 +9,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class ChatClient {
 
@@ -21,30 +25,21 @@ public class ChatClient {
     private String id;
     private List<String> chatViewList;
     private SocketChannel channel;
-    private static Charset charset  = Charset.forName("ISO-8859-2");
+    private static Charset charset = Charset.forName("ISO-8859-2");
 
     public ChatClient(String host, int port, String id) {
         this.host = host;
         this.port = port;
         this.id = id;
         chatViewList = new ArrayList<>();
-        try {
-            channel = SocketChannel.open();
-            channel.configureBlocking(false);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void login() {
         String req = id + " logged in";
 
         try {
-            if(!channel.isOpen()) {
-                channel = SocketChannel.open();
-            }
-            channel.connect(new InetSocketAddress(host, port));
+            channel = SocketChannel.open(new InetSocketAddress(host, port));
+            channel.configureBlocking(false);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -70,7 +65,7 @@ public class ChatClient {
         ByteBuffer byteBuffer = charset.encode(charBuffer);
 
         try {
-            if(channel.isConnected()) {
+            if (channel.isConnected()) {
                 channel.write(byteBuffer);
             }
         }

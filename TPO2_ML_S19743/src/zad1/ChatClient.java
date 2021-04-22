@@ -1,6 +1,6 @@
 /**
  *
- * @author Malinowski Łukasz S19743
+ *  @author Malinowski Łukasz S19743
  *
  */
 

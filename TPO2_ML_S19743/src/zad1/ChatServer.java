@@ -1,5 +1,7 @@
 /**
+ *
  * @author Malinowski Łukasz S19743
+ *
  */
 
 package zad1;
@@ -14,7 +16,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ChatServer extends Thread {
+public class ChatServer {
 
     private final String host;
     private final int port;
@@ -25,15 +27,17 @@ public class ChatServer extends Thread {
     private final List<String> serverLog = Collections.synchronizedList(new ArrayList<>());
     private static final Charset charset = Charset.forName("ISO-8859-2");
     private final Map<String, SocketChannel> clients;
+    private final Thread serverThread;
 
     public ChatServer(String host, int port) {
         this.host = host;
         this.port = port;
         clients = new HashMap<>();
+        serverThread = new Thread(this::run);
     }
 
     public void startServer() {
-        System.out.println("Server started");
+        System.out.println("Server started\n");
         try {
             serverChannel = ServerSocketChannel.open();
             serverChannel.socket().bind(new InetSocketAddress(host, port));
@@ -45,10 +49,9 @@ public class ChatServer extends Thread {
         catch (Exception e) {
             e.printStackTrace();
         }
-        this.start();
+        serverThread.start();
     }
 
-    @Override
     public void run() {
         serverIsRunning = true;
 
@@ -75,7 +78,7 @@ public class ChatServer extends Thread {
                     }
                 }
             }
-            catch (IOException e) {
+            catch (IOException ignored) {
             }
         }
     }
@@ -98,19 +101,25 @@ public class ChatServer extends Thread {
                 buffer.clear();
             }
         }
-        catch (IOException e) {
+        catch (IOException ignored) {
         }
 
         String request = stringBuilder.toString();
 
         if (request.contains("logged in")) {
-            clients.put(request.substring(0, request.indexOf(' ')), socketChannel);
+            clients.put(request.substring(0, request.indexOf(':')), socketChannel);
+            request = request.substring(request.indexOf(' ') + 1);
+        }
+
+        if (request.contains("logged out")) {
+            clients.remove(request.substring(0, request.indexOf(':')));
+            request = request.substring(request.indexOf(' ') + 1);
         }
 
         //TODO process logged out
 
-        if (!stringBuilder.toString().isEmpty())
-            sendMessage(stringBuilder.toString());
+        if (!request.isEmpty())
+            sendMessage(request);
     }
 
     private void sendMessage(String message) {
@@ -121,7 +130,7 @@ public class ChatServer extends Thread {
             try {
                 socket.write(buffer);
             }
-            catch (IOException e) {
+            catch (IOException ignored) {
             }
         });
     }
@@ -129,7 +138,7 @@ public class ChatServer extends Thread {
     public void stopServer() {
         System.out.println("Server stopped");
         serverIsRunning = false;
-        this.interrupt();
+        serverThread.interrupt();
         try {
             serverChannel.close();
         }
@@ -145,7 +154,6 @@ public class ChatServer extends Thread {
             stringBuilder.append(log);
             stringBuilder.append("\n");
         });
-        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         return stringBuilder.toString();
     }
 }

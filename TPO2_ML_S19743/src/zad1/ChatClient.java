@@ -1,5 +1,7 @@
 /**
+ *
  * @author Malinowski Łukasz S19743
+ *
  */
 
 package zad1;
@@ -9,29 +11,29 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class ChatClient {
 
-    private String host;
-    private int port;
-    private String id;
-    private List<String> chatViewList;
+    private final String host;
+    private final int port;
+    private final String id;
+    private final List<String> chatViewList;
     private SocketChannel channel;
-    private static Charset charset = Charset.forName("ISO-8859-2");
+    private static final Charset CHARSET = Charset.forName("ISO-8859-2");
+    private boolean clientIsWorking;
+    private final Thread receiveThread;
 
     public ChatClient(String host, int port, String id) {
         this.host = host;
         this.port = port;
         this.id = id;
+        clientIsWorking = false;
         chatViewList = new ArrayList<>();
+        receiveThread = new Thread(this::receive);
     }
 
     public void login() {
@@ -45,12 +47,29 @@ public class ChatClient {
             e.printStackTrace();
         }
 
+        clientIsWorking = true;
+
+        receiveThread.start();
+
         send(req);
     }
 
     public void logout() {
         String req = id + " logged out";
+
         send(req);
+
+        try {
+            Thread.sleep(5);
+        }
+        catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
+        clientIsWorking = false;
+        receiveThread.interrupt();
+
+        chatViewList.add(req);
 
         try {
             channel.close();
@@ -62,7 +81,7 @@ public class ChatClient {
 
     public void send(String req) {
         CharBuffer charBuffer = CharBuffer.wrap(req);
-        ByteBuffer byteBuffer = charset.encode(charBuffer);
+        ByteBuffer byteBuffer = CHARSET.encode(id + ": " + charBuffer);
 
         try {
             if (channel.isConnected()) {
@@ -71,6 +90,31 @@ public class ChatClient {
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void receive() {
+        while (clientIsWorking) {
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            StringBuilder stringBuilder = new StringBuilder();
+
+            buffer.clear();
+            stringBuilder.setLength(0);
+
+            try {
+                while (channel.read(buffer) > 0) {
+                    buffer.flip();
+                    CharBuffer decode = CHARSET.decode(buffer);
+                    stringBuilder.append(decode);
+                    buffer.clear();
+                }
+            }
+            catch (IOException ignored) {
+            }
+
+            if(!stringBuilder.toString().isEmpty()) {
+                chatViewList.add(stringBuilder.toString());
+            }
         }
     }
 

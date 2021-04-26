@@ -80,6 +80,11 @@ public class ChatClient {
     }
 
     public void send(String req) {
+        try {
+            Thread.sleep(1);
+        }
+        catch (InterruptedException ignored) {
+        }
         CharBuffer charBuffer = CharBuffer.wrap(req);
         ByteBuffer byteBuffer = CHARSET.encode(id + ": " + charBuffer);
 
@@ -128,7 +133,6 @@ public class ChatClient {
             chatView.append(message)
                     .append("\n");
         }
-        //TODO I'll probably need to remove last newline char
         return chatView.toString();
     }
 }

@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS `tpo_books`;
+USE `tpo_books`;
+
+CREATE TABLE `books` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `title` VARCHAR(100) NOT NULL,
+ `author` VARCHAR(100) NOT NULL,
+ `description` VARCHAR(1000) DEFAULT NULL,
+ PRIMARY KEY (`id`)) DEFAULT CHARSET = latin1;
+ 
+ 

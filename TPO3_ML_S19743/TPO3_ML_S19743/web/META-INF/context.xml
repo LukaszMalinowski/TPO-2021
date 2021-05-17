@@ -1,0 +1,11 @@
+<Context>
+    <Resource name="jdbc/tpo_books"
+              auth="Container"
+              type="javax.sql.DataSource"
+              username="tpo"
+              password="tpo"
+              driverClassName="com.mysql.jdbc.Driver"
+              url="jdbc:mysql://localhost:3306/tpo_books?useSSL=false&amp;serverTimezone=UTC"
+              maxActive="15"
+              maxIdle="3"/>
+</Context>

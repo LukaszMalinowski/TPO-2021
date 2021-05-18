@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet (name = "BooksServlet", urlPatterns = "/books")
+@WebServlet (name = "BooksServlet", urlPatterns = {"/books", "/books/"})
 public class BooksServlet extends HttpServlet {
 
     private BookRepository repository;

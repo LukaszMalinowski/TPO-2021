@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 bin/
 TPO1res.txt
+classes/
 
 ### STS ###
 .apt_generated

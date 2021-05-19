@@ -57,28 +57,96 @@ public class BookRepository {
         return bookList;
     }
 
-    public Book getBookById(long id) throws SQLException, BookNotFoundException {
-        Connection connection = dataSource.getConnection();
 
-        String query = "SELECT * FROM BOOKS WHERE id = " + id;
+    public Book getBookByAuthorAndTitle(String authorParam, String titleParam) throws BookNotFoundException {
+        Connection connection;
+        Book book = null;
+        try {
+            connection = dataSource.getConnection();
 
-        ResultSet resultSet = connection.createStatement().executeQuery(query);
+            String query = "SELECT * FROM BOOKS WHERE author LIKE '" + authorParam + "' AND title LIKE '" + titleParam + "'";
 
-        Book book;
+            ResultSet resultSet = connection.createStatement().executeQuery(query);
 
-        if (resultSet.next()) {
-            long bookId = resultSet.getLong("id");
-            String title = resultSet.getString("title");
-            String author = resultSet.getString("author");
-            String description = resultSet.getString("description");
+            if (resultSet.next()) {
+                long bookId = resultSet.getLong("id");
+                String title = resultSet.getString("title");
+                String author = resultSet.getString("author");
+                String description = resultSet.getString("description");
 
-            book = new Book(bookId, title, author, description);
+                book = new Book(bookId, title, author, description);
+            }
+            else {
+                throw new BookNotFoundException("Book " + titleParam + " by " + authorParam + " not found.");
+            }
+
+            connection.close();
         }
-        else {
-            throw new BookNotFoundException(id);
+        catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
 
-        connection.close();
+        return book;
+    }
+
+    public Book getBookByTitle(String titleParam) throws BookNotFoundException {
+        Connection connection;
+        Book book = null;
+        try {
+            connection = dataSource.getConnection();
+
+            String query = "SELECT * FROM BOOKS WHERE title LIKE '" + titleParam + "'";
+
+            ResultSet resultSet = connection.createStatement().executeQuery(query);
+
+            if (resultSet.next()) {
+                long bookId = resultSet.getLong("id");
+                String title = resultSet.getString("title");
+                String author = resultSet.getString("author");
+                String description = resultSet.getString("description");
+
+                book = new Book(bookId, title, author, description);
+            }
+            else {
+                throw new BookNotFoundException("Book " + titleParam + " not found.");
+            }
+
+            connection.close();
+        }
+        catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return book;
+    }
+
+    public Book getBookByAuthor(String authorParam) throws BookNotFoundException {
+        Connection connection;
+        Book book = null;
+        try {
+            connection = dataSource.getConnection();
+
+            String query = "SELECT * FROM BOOKS WHERE author LIKE '" + authorParam + "'";
+
+            ResultSet resultSet = connection.createStatement().executeQuery(query);
+
+            if (resultSet.next()) {
+                long bookId = resultSet.getLong("id");
+                String title = resultSet.getString("title");
+                String author = resultSet.getString("author");
+                String description = resultSet.getString("description");
+
+                book = new Book(bookId, title, author, description);
+            }
+            else {
+                throw new BookNotFoundException("Book by " + authorParam + " not found.");
+            }
+
+            connection.close();
+        }
+        catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
 
         return book;
     }

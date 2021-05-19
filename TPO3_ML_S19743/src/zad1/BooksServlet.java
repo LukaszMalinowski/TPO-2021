@@ -16,6 +16,7 @@ import java.util.List;
 public class BooksServlet extends HttpServlet {
 
     private BookRepository repository;
+    private PrintWriter writer;
 
     @Override
     public void init() throws ServletException {
@@ -26,7 +27,9 @@ public class BooksServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");
-        PrintWriter writer = resp.getWriter();
+
+        writer = resp.getWriter();
+
         writer.write("<!DOCTYPE html>\n" +
                              "<html lang=\"en\">\n" +
                              "<head>\n" +
@@ -40,7 +43,7 @@ public class BooksServlet extends HttpServlet {
 
         List<Book> allBooks = repository.getAllBooks();
 
-        allBooks.forEach(book -> addBookToList(book, writer));
+        allBooks.forEach(this::addBookToList);
 
         writer.write("</ul>\n" +
                              "\n" +
@@ -48,7 +51,7 @@ public class BooksServlet extends HttpServlet {
                              "</html>");
     }
 
-    private void addBookToList(Book book, PrintWriter writer) {
+    private void addBookToList(Book book) {
         String listItem = String.format("<li>\n" +
                                                 "        <h2>%s</h2>\n" +
                                                 "        <h3>%s</h3>\n", book.getTitle(), book.getAuthor());

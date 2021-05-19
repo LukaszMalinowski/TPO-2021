@@ -69,12 +69,6 @@ public class BookServlet extends HttpServlet {
         if (!authorParam.isEmpty() && !titleParam.isEmpty()) {
             book = repository.getBookByAuthorAndTitle(authorParam, titleParam);
         }
-        else if (authorParam.isEmpty() && !titleParam.isEmpty()) {
-            book = repository.getBookByTitle(titleParam);
-        }
-        else if (!authorParam.isEmpty()) {
-            book = repository.getBookByAuthor(authorParam);
-        }
 
         if (book == null) {
             writer.write("<h3>Book not found.</h3>");
@@ -85,7 +79,8 @@ public class BookServlet extends HttpServlet {
 
             if (book.getDescription() != null) {
                 writer.write(String.format("<p>%s</p>\n", book.getDescription()));
-            } else {
+            }
+            else {
                 writer.write("<p>There's no description</p>");
             }
         }
